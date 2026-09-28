@@ -5,7 +5,7 @@ FROM eclipse-temurin:17-jdk-alpine-3.23 AS builder
 ARG JAR_FILE=app.jar
 WORKDIR /build
 COPY ${JAR_FILE} application.jar
-COPY agent/applicationinsights-agent-3.4.14.jar applicationinsights-agent.jar
+# COPY agent/applicationinsights-agent-3.4.14.jar applicationinsights-agent.jar
 
 # Spring Boot 3.3+ syntax. On older Boot versions use:
 #   java -Djarmode=layertools -jar application.jar extract --destination extracted
@@ -19,7 +19,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
  && adduser -S -D -H -u 10001 -G fineract fineract
 
 # See notes: check whether the JVM actually uses this bundle.
-ADD ca-bundle.crt /etc/pki/tls/certs/ca-bundle.crt
+# ADD ca-bundle.crt /etc/pki/tls/certs/ca-bundle.crt
 
 WORKDIR /app
 COPY --from=builder /build/extracted/dependencies/ ./
