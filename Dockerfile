@@ -26,10 +26,10 @@ COPY --from=builder /build/extracted/dependencies/ ./
 COPY --from=builder /build/extracted/spring-boot-loader/ ./
 COPY --from=builder /build/extracted/snapshot-dependencies/ ./
 COPY --from=builder /build/extracted/application/ ./
-COPY --from=builder /build/applicationinsights-agent.jar ./
+# COPY --from=builder /build/applicationinsights-agent.jar ./
 
-ENV APPLICATIONINSIGHTS_ROLE_NAME="fineract" \
-    JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+# ENV APPLICATIONINSIGHTS_ROLE_NAME="fineract" \
+   # JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
 
 EXPOSE 8080
 USER 10001
