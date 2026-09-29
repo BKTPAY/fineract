@@ -36,4 +36,6 @@ USER 10001
 
 # exec makes java PID 1 so SIGTERM from Kubernetes reaches it.
 # Debugging (JDWP) is added only in non-prod, via JAVA_TOOL_OPTIONS in the deployment.
-ENTRYPOINT ["sh", "-c", "exec java -javaagent:/app/applicationinsights-agent.jar $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]
+# ENTRYPOINT ["sh", "-c", "exec java -javaagent:/app/applicationinsights-agent.jar $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]
+
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]
