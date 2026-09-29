@@ -2,8 +2,8 @@
 # Pin both images by digest in practice (Renovate/Dependabot keep them fresh).
 FROM eclipse-temurin:17-jdk-alpine-3.23 AS builder
 # The pipeline stages the boot jar as app.jar (skips the -plain jar).
-ARG JAR_FILE=fineract-provider.jar
-WORKDIR /build
+ARG JAR_FILE=fineract-provider/build/libs/*.jar
+# WORKDIR /build
 COPY ${JAR_FILE} application.jar
 # COPY agent/applicationinsights-agent-3.4.14.jar applicationinsights-agent.jar
 
