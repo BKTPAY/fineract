@@ -1,6 +1,6 @@
 # Fineract image aligned with the epara microservice pattern.
 # Pin both images by digest in practice (Renovate/Dependabot keep them fresh).
-FROM eclipse-temurin:17-jdk-alpine-3.23 AS builder
+FROM eclipse-temurin:25-jdk-alpine-3.24 AS builder
 # The pipeline stages the boot jar as app.jar (skips the -plain jar).
 ARG JAR_FILE=fineract-provider/build/libs/*.jar
 WORKDIR /build
@@ -11,7 +11,7 @@ COPY ${JAR_FILE} application.jar
 #   java -Djarmode=layertools -jar application.jar extract --destination extracted
 RUN java -Djarmode=tools -jar application.jar extract --layers --launcher --destination extracted
 
-FROM eclipse-temurin:17-jre-alpine-3.23
+FROM eclipse-temurin:25-jdk-alpine-3.24
 
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
