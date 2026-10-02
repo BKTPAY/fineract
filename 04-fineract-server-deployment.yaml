@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fineract-server
+  namespace: fineract
+  labels:
+    app: fineract-server
+spec:
+  # NOTE: Fineract's default EhCache does not invalidate across replicas
+  # (FINERACT-880, unresolved upstream). Test cache-dependent read paths
+  # under multi-pod load, or pin replicas: 1 with a fast HPA-on-CPU scale
+  # path until a distributed cache backend is configured.
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fineract-server
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: fineract-server
+    spec:
+      containers:
+        - name: fineract-server
+          # Placeholder — the pipeline's KubernetesManifest@1 'containers' input
+          # rewrites this to <acrLoginServer>/fineract:<Build.BuildId> at deploy time.
+          image: eparacr.azurecr.io/epara/fineract-service:latest
+          ports:
+            - containerPort: 8443
+              name: https
+          envFrom:
+            - configMapRef:
+                name: fineract-config
+          env:
+            - name: FINERACT_HIKARI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: fineract-db-credentials
+                  key: DB_USERNAME
+            - name: FINERACT_HIKARI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: fineract-db-credentials
+                  key: DB_PASSWORD
+            - name: FINERACT_DEFAULT_TENANTDB_UID
+              valueFrom:
+                secretKeyRef:
+                  name: fineract-db-credentials
+                  key: DB_USERNAME
+            - name: FINERACT_DEFAULT_TENANTDB_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: fineract-db-credentials
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          readinessProbe:
+            httpGet:
+              path: /fineract-provider/actuator/health
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /fineract-provider/actuator/health
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 90
+            periodSeconds: 20
+            failureThreshold: 3
+          volumeMounts:
+            - name: kv-secrets
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+        - name: kv-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: fineract-kv-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fineract-server
+  namespace: fineract
+spec:
+  selector:
+    app: fineract-server
+  ports:
+    - port: 443
+      targetPort: 8443
+      protocol: TCP
+  type: ClusterIP
